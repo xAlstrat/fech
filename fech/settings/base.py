@@ -28,6 +28,8 @@ INSTALLED_APPS = [
     'home',
     'search',
 
+    'django_cron',
+
     'wagtail.api.v2',
     'rest_framework',
 
@@ -173,3 +175,17 @@ WAGTAIL_ADDRESS_MAP_KEY = 'AIzaSyCmxWqESMmq7IyS_VTuQ_k1_P2umYdM1PE'
 
 WAGTAIL_ADDRESS_MAP_ZOOM = 8  # See https://developers.google.com/maps/documentation/javascript/tutorial#MapOptions for more information.
 WAGTAIL_ADDRESS_MAP_LANGUAGE = 'es'  # See https://developers.google.com/maps/faq#languagesupport for supported languages.
+
+
+# Mailgun
+EMAIL_HOST = os.environ.get('EMAIL_HOST')
+EMAIL_PORT = 587
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL')
+EMAIL_USE_TLS = True
+
+# Cron jobs
+CRON_CLASSES = [
+    "blog.cron.SendNotificationsJob",
+]

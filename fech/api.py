@@ -1,23 +1,29 @@
 # api.py
-
+from modelcluster.models import get_all_child_relations
 from wagtail.api.v2.endpoints import PagesAPIEndpoint, BaseAPIEndpoint
 from wagtail.api.v2.router import WagtailAPIRouter
+from wagtail.api.v2.serializers import ChildRelationField, BaseSerializer
 from wagtail.images.api.v2.endpoints import ImagesAPIEndpoint
 from wagtail.documents.api.v2.endpoints import DocumentsAPIEndpoint
 
 from blog.models import Event, New, Benefit
 
 
-class EventSnippetAPIEndpoint(BaseAPIEndpoint):
+class SnippetApiEndpoint(BaseAPIEndpoint):
+    known_query_parameters = BaseAPIEndpoint.known_query_parameters.union([
+        'type',
+    ])
 
+
+class EventSnippetAPIEndpoint(SnippetApiEndpoint):
     model = Event
 
 
-class NewSnippetAPIEndpoint(BaseAPIEndpoint):
+class NewSnippetAPIEndpoint(SnippetApiEndpoint):
     model = New
 
 
-class BenefitSnippetAPIEndpoint(BaseAPIEndpoint):
+class BenefitSnippetAPIEndpoint(SnippetApiEndpoint):
     model = Benefit
     # body_fields = BaseAPIEndpoint.body_fields + [
     #     'field_1',

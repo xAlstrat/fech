@@ -1,4 +1,5 @@
 Babel==2.7.0
 Django>=2.2,<2.3
+django-cron==0.5.1
 wagtail>=2.6,<2.7
 
