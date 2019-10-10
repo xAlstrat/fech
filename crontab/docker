@@ -1,2 +1,2 @@
 # Used for django_cron
-*/5 * * * * /usr/bin/docker exec fech-container python manage.py runcrons > /home/ubuntu/cronjob.log
+*/1 * * * * /usr/bin/docker exec fech-container python manage.py runcrons > /home/ubuntu/cronjob.log

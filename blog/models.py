@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
+from django.db.models import DecimalField
 from modelcluster.contrib.taggit import ClusterTaggableManager
 from modelcluster.fields import ParentalKey
 from modelcluster.models import ClusterableModel
@@ -22,11 +23,12 @@ from wagtail.snippets.models import register_snippet
 from babel.dates import format_datetime, format_date
 from django.utils.timezone import now
 
-from blog.serializers import UserSerializer, RichTextRendereableField
+from blog.serializers import UserSerializer, RichTextRendereableField, get_place_serializer
 
 
 class UnnorderedInlinePanel(InlinePanel):
     template = "panel/unnordered_inline_panel.html"
+
 
 class BlogPageTag(TaggedItemBase):
     content_object = ParentalKey(
@@ -131,6 +133,24 @@ class BlogTagIndexPage(Page):
 
 
 # Snippets
+@register_snippet
+class Place(models.Model):
+    name = models.CharField('Nombre', max_length=256)
+    address = models.CharField('Dirección', max_length=256)
+    lat = models.DecimalField(max_digits=9, decimal_places=6)
+    lng = models.DecimalField(max_digits=9, decimal_places=6)
+
+    api_fields = [
+        APIField('name'),
+        APIField('address'),
+        APIField('lat'),
+        APIField('lng'),
+    ]
+
+    def __str__(self):
+        return '%s - %s' % (self.name, self.address)
+
+
 class CreateMixin(models.Model):
     """
     Provides a mixin for annotating a DB object with timestamp and
@@ -166,6 +186,8 @@ class Content(CreateMixin, ClusterableModel):
     title = models.CharField(max_length=250, verbose_name='Título')
     body = RichTextField(blank=True, verbose_name="Descripción")
     tags = TaggableManager(through=ContentTags, blank=True)
+    publish_at = models.DateTimeField('Publicar el', default=now)
+    unpublish_at = models.DateTimeField('Despublicar el', null=True, blank=True)
 
     search_fields = [
         index.SearchField('body'),
@@ -180,8 +202,14 @@ class Content(CreateMixin, ClusterableModel):
     end_panels = [
         FieldPanel('author'),
         FieldPanel('tags'),
-        UnnorderedInlinePanel('notifications', label="Notificación automática", help_text='Selecciona un canal, una fecha y hora para notificar este contenido de forma automatizada a todos los estudiantes suscritos.'),
-        UnnorderedInlinePanel('sharings', label="Publicación en red social", help_text='Selecciona una red social, una fecha y hora para publicar este contenido de forma automatizada en dicha red social.')
+        MultiFieldPanel([
+            FieldRowPanel([
+                FieldPanel('publish_at', classname="col6", heading='heading'),
+                FieldPanel('unpublish_at', classname="col6"),
+            ])
+        ], heading="Publicar automáticamente", help_text='Agenda este contenido para ser publicado y/o despublicado automáticamente. Si el campo \'despublicar\' está vacío no se agendará la despublicación.'),
+        UnnorderedInlinePanel('notifications', label="Notificación automática", help_text='Selecciona un canal, una fecha y hora para notificar este contenido automáticamente a todos los estudiantes suscritos.'),
+        UnnorderedInlinePanel('sharings', label="Publicación en red social", help_text='Selecciona una red social, una fecha y hora para publicar este contenido automáticamente en dicha red social.')
     ]
 
     api_fields = [
@@ -202,24 +230,26 @@ class Content(CreateMixin, ClusterableModel):
 class Event(Content):
     start = models.DateTimeField("Fecha de inicio")
     end = models.DateTimeField("Fecha de término", null=True, blank=True)
-    address = models.CharField(max_length=250, verbose_name='Dirección')
+    place = models.ForeignKey(Place, on_delete=models.DO_NOTHING, null=True)
 
     search_fields = Content.search_fields + [
 
     ]
 
     panels = Content.panels + [
-        FieldRowPanel([
-          FieldPanel('start', classname="col6"),
-          FieldPanel('end', classname="col6"),
+        MultiFieldPanel([
+            FieldRowPanel([
+              FieldPanel('start', classname="col6"),
+              FieldPanel('end', classname="col6"),
+            ])
         ], heading="Fecha del evento"),
-        FieldPanel('address')
+        FieldPanel('place')
     ] + Content.end_panels
 
     api_fields = Content.api_fields + [
         APIField('start'),
         APIField('end'),
-        APIField('address'),
+        APIField('place', serializer=get_place_serializer()),
     ]
 
     # edit_handler = TabbedInterface([
@@ -264,8 +294,10 @@ class Benefit(Content):
 
     panels = Content.panels + [
         MultiFieldPanel([
-            FieldPanel('start'),
-            FieldPanel('end'),
+            FieldRowPanel([
+                FieldPanel('start', classname="col6"),
+                FieldPanel('end', classname="col6"),
+            ])
         ], heading="Fecha del beneficio"),
     ] + Content.end_panels
 
@@ -283,7 +315,7 @@ class Notification(CreateMixin):
 
     CHANNEL_EMAIL = 'EMAIL'
     CHANNEL_MOBILE = 'MOBILE'
-    notify_at = models.DateTimeField("Fecha de notificación", default=now())
+    notify_at = models.DateTimeField("Fecha de notificación", default=now)
     notified = models.BooleanField("Se ha notificado", default=False)
     channel = models.CharField('Canal', max_length=16, choices=[
         (CHANNEL_EMAIL, 'E-mail'),
@@ -330,7 +362,7 @@ class Sharing(CreateMixin):
     SOCIAL_FACEBOOK = 'FACEBOOK'
     SOCIAL_INSTAGRAM = 'INSTAGRAM'
     SOCIAL_TWITTER = 'TWITTER'
-    notify_at = models.DateTimeField("Fecha de notificación", default=now())
+    notify_at = models.DateTimeField("Fecha de notificación", default=now)
     notified = models.BooleanField("Se ha notificado", default=False)
     channel = models.CharField('Red social', max_length=32, choices=[
         (SOCIAL_FACEBOOK, 'Facebook'),
