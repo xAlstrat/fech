@@ -1,2 +1,2 @@
 # Used for django_cron
-*/5 * * * * source /home/ubuntu/.bashrc && source /home/ubuntu/work/your-project/bin/activate && python /home/ubuntu/work/your-project/src/manage.py runcrons > /home/ubuntu/cronjob.log
+*/1 * * * * source /home/clapclapp/.bashrc && source /home/clapclapp/venv/wagtail/bin/activate && python /home/clapclapp/wagtail/fech/manage.py runcrons > /home/clapclapp/cronjob.log

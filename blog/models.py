@@ -16,6 +16,7 @@ from wagtail.core.models import Page, Orderable
 from wagtail.core.fields import RichTextField
 from wagtail.admin.edit_handlers import FieldPanel, InlinePanel, MultiFieldPanel, TabbedInterface, ObjectList, \
     FieldRowPanel
+from wagtail.core.rich_text import RichText
 from wagtail.images.edit_handlers import ImageChooserPanel
 from wagtail.search import index
 from wagtail.snippets.edit_handlers import SnippetChooserPanel
@@ -137,8 +138,8 @@ class BlogTagIndexPage(Page):
 class Place(models.Model):
     name = models.CharField('Nombre', max_length=256)
     address = models.CharField('Dirección', max_length=256)
-    lat = models.DecimalField(max_digits=9, decimal_places=6)
-    lng = models.DecimalField(max_digits=9, decimal_places=6)
+    lat = models.DecimalField(max_digits=9, decimal_places=7)
+    lng = models.DecimalField(max_digits=9, decimal_places=7)
 
     api_fields = [
         APIField('name'),
@@ -219,6 +220,11 @@ class Content(CreateMixin, ClusterableModel):
         APIField('author', serializer=UserSerializer()),
         APIField('tags'),
     ]
+
+    @property
+    def body_as_html(self):
+        rich_text = RichText(self.body)
+        return rich_text.__html__()
 
     def __str__(self):
         tz = pytz.timezone("America/Santiago")
@@ -352,10 +358,6 @@ class Notification(CreateMixin):
         APIField('channel'),
     ]
 
-    def __str__(self):
-        date = format_date(self.start, 'dd/MMM/YYYY', locale='es')
-        return '%s. %s' % (date, self.title)
-
 
 class Sharing(CreateMixin):
 
@@ -386,10 +388,6 @@ class Sharing(CreateMixin):
         APIField('notified'),
         APIField('channel'),
     ]
-
-    def __str__(self):
-        date = format_date(self.start, 'dd/MMM/YYYY', locale='es')
-        return '%s. %s' % (date, self.title)
 
 
 class EventNotification(Notification, Orderable):
