@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     'home',
     'search',
 
+    'fcm_django',
     'django_cron',
 
     'wagtail.api.v2',
@@ -130,7 +131,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/2.2/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'es-CL'
 
 TIME_ZONE = 'UTC'
 
@@ -194,3 +195,11 @@ EMAIL_USE_TLS = True
 CRON_CLASSES = [
     "blog.cron.SendNotificationsJob",
 ]
+
+# FCM
+FCM_DJANGO_SETTINGS = {
+        "APP_VERBOSE_NAME": "FCM Django",
+        "FCM_SERVER_KEY": os.getenv('FIREBASE_API_KEY'),
+        "ONE_DEVICE_PER_USER": False,
+        "DELETE_INACTIVE_DEVICES": False,
+}

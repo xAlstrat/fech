@@ -141,6 +141,10 @@ class Place(models.Model):
     lat = models.DecimalField(max_digits=9, decimal_places=7)
     lng = models.DecimalField(max_digits=9, decimal_places=7)
 
+    class Meta:
+        verbose_name = "Lugar"
+        verbose_name_plural = "Lugares"
+
     api_fields = [
         APIField('name'),
         APIField('address'),
@@ -190,6 +194,7 @@ class Content(CreateMixin, ClusterableModel):
     publish_at = models.DateTimeField('Publicar el', default=now)
     unpublish_at = models.DateTimeField('Despublicar el', null=True, blank=True)
 
+
     search_fields = [
         index.SearchField('body'),
     ]
@@ -230,13 +235,17 @@ class Content(CreateMixin, ClusterableModel):
         tz = pytz.timezone("America/Santiago")
         date = format_datetime(self.created_at.astimezone(tz), 'dd/MMM/YYYY', locale='es')
         return '%s. %s' % (date, self.title)
-
+    
 
 @register_snippet
 class Event(Content):
     start = models.DateTimeField("Fecha de inicio")
     end = models.DateTimeField("Fecha de término", null=True, blank=True)
     place = models.ForeignKey(Place, on_delete=models.DO_NOTHING, null=True)
+
+    class Meta:
+        verbose_name = "Evento"
+        verbose_name_plural = "Eventos"
 
     search_fields = Content.search_fields + [
 
@@ -280,6 +289,10 @@ class Event(Content):
 @register_snippet
 class New(Content):
 
+    class Meta:
+        verbose_name = "Noticia"
+        verbose_name_plural = "Noticias"
+
     search_fields = Content.search_fields + [
     ]
 
@@ -294,6 +307,10 @@ class New(Content):
 class Benefit(Content):
     start = models.DateField("Fecha de inicio", null=True, blank=True)
     end = models.DateField("Fecha de término", null=True, blank=True)
+
+    class Meta:
+        verbose_name = "Beneficio"
+        verbose_name_plural = "Beneficios"
 
     search_fields = Content.search_fields + [
     ]

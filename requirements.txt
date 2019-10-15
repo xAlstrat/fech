@@ -1,6 +1,7 @@
 Babel==2.7.0
 Django>=2.2,<2.3
 django-cron==0.5.1
+fcm-django==0.2.21
 python-dotenv==0.10.3
 wagtail>=2.6,<2.7
 
