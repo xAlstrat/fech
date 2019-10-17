@@ -34,24 +34,23 @@ def remove_jpg_cache(file):
         os.remove('%s.jpg' % file_name, dir_fd=None)
 
 
-def publish_img_to_instagram(description='', file=None):
+def publish_img_to_instagram(description='', media=None):
 
     api = get_instagram_api()
     api.login()  # login
 
-    photo_path = 'InstagramAPI/SearchSquared-240x240.png'
-    caption = "Sample photo"
-    api.uploadPhoto(convert_to_jpg(photo_path), caption=caption)
+    photo_path = media
+    api.uploadPhoto(convert_to_jpg(media), caption=description)
 
     remove_jpg_cache(photo_path)
 
 
-def publish_img_to_twitter(description='', file=None):
+def publish_img_to_twitter(description='', media=None):
 
     api = get_twitter_api()
-
-    photo_path = 'InstagramAPI/SearchSquared-240x240.png'
-    caption = "Sample photo"
-    api.PostUpdate(caption, media=convert_to_jpg(photo_path))
+    photo_path = media
+    media = convert_to_jpg(media)
+    caption = description
+    api.PostUpdate(caption, media=media)
 
     remove_jpg_cache(photo_path)

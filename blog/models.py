@@ -229,6 +229,10 @@ class Content(CreateMixin, ClusterableModel):
     ]
 
     @property
+    def image_path(self):
+        return self.image.file.path
+
+    @property
     def body_as_html(self):
         rich_text = RichText(self.body)
         return rich_text.__html__()
@@ -383,8 +387,8 @@ class Sharing(CreateMixin):
     SOCIAL_FACEBOOK = 'FACEBOOK'
     SOCIAL_INSTAGRAM = 'INSTAGRAM'
     SOCIAL_TWITTER = 'TWITTER'
-    notify_at = models.DateTimeField("Fecha de notificación", default=now)
-    notified = models.BooleanField("Se ha notificado", default=False)
+    publish_at = models.DateTimeField("Fecha de publicación", default=now)
+    published = models.BooleanField("Se ha publicado", default=False)
     channel = models.CharField('Red social', max_length=32, choices=[
         (SOCIAL_FACEBOOK, 'Facebook'),
         (SOCIAL_INSTAGRAM, 'Instagram'),
@@ -396,15 +400,15 @@ class Sharing(CreateMixin):
 
     panels = [
         FieldRowPanel([
-            FieldPanel('notify_at', classname="col6"),
+            FieldPanel('publish_at', classname="col6"),
             FieldPanel('channel', classname="col6"),
-        ], heading="Compartir el",
+        ], heading="Publicar el",
             classname="collapsible collapsed")
     ]
 
     api_fields = Content.api_fields + [
-        APIField('notify_at'),
-        APIField('notified'),
+        APIField('publish_at'),
+        APIField('published'),
         APIField('channel'),
     ]
 
