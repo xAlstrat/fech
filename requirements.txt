@@ -5,3 +5,17 @@ fcm-django==0.2.21
 python-dotenv==0.10.3
 wagtail>=2.6,<2.7
 
+# Instagram API
+imageio==2.6.1
+imageio-ffmpeg==0.3.0
+requests==2.11.1
+requests-toolbelt==0.7.0
+moviepy==0.2.2.11
+
+
+# Twitter API
+oauthlib==3.1.0
+python-twitter==3.5
+requests-oauthlib==1.2.0
+
+

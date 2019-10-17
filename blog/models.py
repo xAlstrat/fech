@@ -6,6 +6,8 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.db.models import DecimalField
+from fcm_django.api.rest_framework import FCMDeviceAuthorizedViewSet
+from fcm_django.models import FCMDevice
 from modelcluster.contrib.taggit import ClusterTaggableManager
 from modelcluster.fields import ParentalKey
 from modelcluster.models import ClusterableModel
@@ -235,7 +237,7 @@ class Content(CreateMixin, ClusterableModel):
         tz = pytz.timezone("America/Santiago")
         date = format_datetime(self.created_at.astimezone(tz), 'dd/MMM/YYYY', locale='es')
         return '%s. %s' % (date, self.title)
-    
+
 
 @register_snippet
 class Event(Content):

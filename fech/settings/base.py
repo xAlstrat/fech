@@ -28,6 +28,7 @@ BASE_DIR = os.path.dirname(PROJECT_DIR)
 # Application definition
 
 INSTALLED_APPS = [
+    'social',
     'notifications',
     'blog',
     'home',
@@ -203,3 +204,17 @@ FCM_DJANGO_SETTINGS = {
         "ONE_DEVICE_PER_USER": False,
         "DELETE_INACTIVE_DEVICES": False,
 }
+
+
+# Social publications
+
+# Instagram
+INSTAGRAM_USER = os.getenv('INSTAGRAM_USER')
+INSTAGRAM_PWD = os.getenv('INSTAGRAM_PWD')
+
+
+# Twitter
+TWITTER_CONSUMER_KEY = os.getenv('TWITTER_CONSUMER_KEY')
+TWITTER_CONSUMER_SECRET = os.getenv('TWITTER_CONSUMER_SECRET')
+TWITTER_TOKEN_KEY = os.getenv('TWITTER_TOKEN_KEY')
+TWITTER_TOKEN_SECRET = os.getenv('TWITTER_TOKEN_SECRET')
