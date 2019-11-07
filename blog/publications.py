@@ -3,7 +3,9 @@ from django.db.models import F
 from blog.models import  EventSharing
 from social.publishers import BasePublicationProvider, TwitterPublisher, InstagramPublisher
 
-
+"""
+Create publications for specified social networks.
+"""
 def create_publications():
     create_twitter_publications()
     create_instagram_publications()

@@ -56,8 +56,7 @@ class BaseNotificationSender:
         pass
 
     def after_send(self):
-        pass
-        # self.notifications.update(**{self.provider.notified_field: True})
+        self.notifications.update(**{self.provider.notified_field: True})
 
 
 class EmailNotificationSender(BaseNotificationSender):

@@ -6,6 +6,7 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.db.models import DecimalField
+from django.utils.html import format_html
 from fcm_django.api.rest_framework import FCMDeviceAuthorizedViewSet
 from fcm_django.models import FCMDevice
 from modelcluster.contrib.taggit import ClusterTaggableManager
@@ -17,7 +18,7 @@ from wagtail.api import APIField
 from wagtail.core.models import Page, Orderable
 from wagtail.core.fields import RichTextField
 from wagtail.admin.edit_handlers import FieldPanel, InlinePanel, MultiFieldPanel, TabbedInterface, ObjectList, \
-    FieldRowPanel
+    FieldRowPanel, EditHandler
 from wagtail.core.rich_text import RichText
 from wagtail.images.edit_handlers import ImageChooserPanel
 from wagtail.search import index
@@ -25,8 +26,64 @@ from wagtail.snippets.edit_handlers import SnippetChooserPanel
 from wagtail.snippets.models import register_snippet
 from babel.dates import format_datetime, format_date
 from django.utils.timezone import now
+from django.utils.translation import ugettext_lazy as _
 
 from blog.serializers import UserSerializer, RichTextRendereableField, get_place_serializer
+
+
+class ReadOnlyPanel(EditHandler):
+    """
+    Base Handler for rendering read only fields.
+    """
+    def __init__(self, attr, *args, **kwargs):
+        self.attr = attr
+        super().__init__(*args, **kwargs)
+
+    def clone(self):
+        return self.__class__(
+            attr=self.attr,
+            heading=self.heading,
+            classname=self.classname,
+            help_text=self.help_text,
+        )
+
+    def get_heading(self):
+        return self.heading
+
+    def render(self):
+        value = getattr(self.instance, self.attr)
+        if callable(value):
+            value = value()
+        return format_html('<div style="padding-top: 1.2em;">{}</div>', value)
+
+    def render_as_object(self):
+        return format_html(
+            '<fieldset><legend>{}</legend>'
+            '<ul class="fields"><li><div class="field">{}</div></li></ul>'
+            '</fieldset>',
+            self.get_heading(), self.render())
+
+    def render_as_field(self):
+        return format_html(
+            '<div class="field">'
+            '<label>{}{}</label>'
+            '<div class="field-content">{}</div>'
+            '</div>',
+            self.get_heading(), _(':'), self.render())
+
+
+class WithRequestObjectList(ObjectList):
+
+    def get_form_class(self):
+        request = self.request
+        class Form(super().get_form_class()):
+            def save(self, *args, **kwargs):
+                object = super().save(*args, **kwargs)
+                after_save = getattr(object, "after_save", None)
+                if callable(after_save):
+                    return object.after_save(request)
+                return object
+        return Form
 
 
 class UnnorderedInlinePanel(InlinePanel):
@@ -186,7 +243,7 @@ class ContentTags(TaggedItemBase):
 
 
 class Content(CreateMixin, ClusterableModel):
-    author = models.ForeignKey(User, on_delete=models.DO_NOTHING)
+    author = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True)
     image = models.ForeignKey(
         'wagtailimages.Image', on_delete=models.DO_NOTHING, related_name='+', verbose_name="Imagen"
     )
@@ -208,7 +265,7 @@ class Content(CreateMixin, ClusterableModel):
     ]
 
     end_panels = [
-        FieldPanel('author'),
+        ReadOnlyPanel('author', heading="Autor"),
         FieldPanel('tags'),
         MultiFieldPanel([
             FieldRowPanel([
@@ -242,6 +299,10 @@ class Content(CreateMixin, ClusterableModel):
         date = format_datetime(self.created_at.astimezone(tz), 'dd/MMM/YYYY', locale='es')
         return '%s. %s' % (date, self.title)
 
+    def after_save(self, request):
+        self.author = request.user
+        return self.save()
+
 
 @register_snippet
 class Event(Content):
@@ -266,6 +327,8 @@ class Event(Content):
         ], heading="Fecha del evento"),
         FieldPanel('place')
     ] + Content.end_panels
+
+    edit_handler = WithRequestObjectList(panels)
 
     api_fields = Content.api_fields + [
         APIField('start'),
@@ -305,6 +368,8 @@ class New(Content):
     panels = Content.panels + [
     ] + Content.end_panels
 
+    edit_handler = WithRequestObjectList(panels)
+
     api_fields = Content.api_fields + [
     ]
 
@@ -329,6 +394,9 @@ class Benefit(Content):
             ])
         ], heading="Fecha del beneficio"),
     ] + Content.end_panels
+
+    edit_handler = WithRequestObjectList(panels)
+
 
     api_fields = Content.api_fields + [
         APIField('start'),
@@ -402,6 +470,7 @@ class Sharing(CreateMixin):
         FieldRowPanel([
             FieldPanel('publish_at', classname="col6"),
             FieldPanel('channel', classname="col6"),
+            ReadOnlyPanel('published', classname="col12", heading='¿Publicado?'),
         ], heading="Publicar el",
             classname="collapsible collapsed")
     ]

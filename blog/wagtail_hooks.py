@@ -49,5 +49,4 @@ def update_pages_summary(request, menu_items):
 
 @hooks.register('describe_collection_contents')
 def append_snippets_summary(collection):
-  print("asdasd.............")
   return None
