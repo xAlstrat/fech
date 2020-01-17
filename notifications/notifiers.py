@@ -4,6 +4,7 @@ from django.template.loader import get_template
 from django.utils.timezone import now
 
 from django.core import mail
+from pyfcm import FCMNotification
 
 
 """
@@ -88,7 +89,7 @@ class EmailNotificationSender(BaseNotificationSender):
             from_email='Notificaciones <' + 'notificationes@fech.cl' + '>',
             to=list(map(lambda u: u.email, users)),
             cc=[],
-            reply_to=[]
+            reply_to=['dudas@fech.cl']
         )
 
         html_message = template.render(object_data.__dict__)
@@ -103,6 +104,66 @@ class EmailNotificationSender(BaseNotificationSender):
         return messages
 
     def send(self, notifications, users):
+        messages = self.build_messages(notifications, users)
+        connection = mail.get_connection()
+        if len(messages) > 0:
+            connection.send_messages(messages)
+            return True
+        return False
+
+
+class PushNotificationSender(BaseNotificationSender):
+
+    channel = 'MOBILE'
+    template_field = 'template'
+    object_notification_mapping = {
+        'subject': 'title',
+        'body': 'body_as_html',
+        'from_email': '',
+        'to': '',
+        'cc': '',
+        'reply_to': ''
+    }
+
+    def __init__(self, provider, object_field):
+        super().__init__(provider)
+        self.object_field = object_field
+
+    def get_object(self, notification):
+        return getattr(notification, self.object_field)
+
+    def build_notification_message(self, notification, users):
+        object_data = self.get_object(notification)
+        template = get_template('notifications/default_email.html')
+        msg = EmailMultiAlternatives(
+            subject=getattr(object_data, self.object_notification_mapping.get('subject')),
+            body='',
+            from_email='Notificaciones <' + 'notificationes@fech.cl' + '>',
+            to=list(map(lambda u: u.email, users)),
+            cc=[],
+            reply_to=['dudas@fech.cl']
+        )
+
+        html_message = template.render(object_data.__dict__)
+        msg.attach_alternative(html_message, "text/html")
+        msg.send()
+        return msg
+
+    def build_messages(self, notifications, users):
+        messages = []
+        for notification in notifications:
+            messages.append(self.build_notification_message(notification, users))
+        return messages
+
+    def send(self, notifications, users):
+        push_service = FCMNotification(api_key="AIzaSyBecb3YDmawIkyXsoM6oJjLst3b1GX9o8Q")
+        push_service.notify_topic_subscribers(topic_name="all", message_body='message body')
+        subscribed = push_service.subscribe_registration_ids_to_topic(tokens, 'test')
+        # returns True if successful, raises error if unsuccessful
+
+        unsubscribed = push_service.unsubscribe_registration_ids_from_topic(tokens, 'test')
+        # returns True if successful, raises error if unsuccessful
+
         messages = self.build_messages(notifications, users)
         connection = mail.get_connection()
         if len(messages) > 0:
