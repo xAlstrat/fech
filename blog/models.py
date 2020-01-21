@@ -469,7 +469,7 @@ class Sharing(CreateMixin):
     SOCIAL_TWITTER = 'TWITTER'
     publish_at = models.DateTimeField("Fecha de publicación", default=now)
     published = models.BooleanField("Se ha publicado", default=False)
-    description = models.TextField("Descripción", max_length=1024, help_text='Número máximo de carácteres depende de la red social utilizada.')
+    description = models.TextField("Descripción", max_length=1024, help_text='Número máximo de carácteres depende de la red social utilizada.', null=True)
     channel = models.CharField('Red social', max_length=32, choices=[
         (SOCIAL_FACEBOOK, 'Facebook'),
         (SOCIAL_INSTAGRAM, 'Instagram'),
