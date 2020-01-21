@@ -21,10 +21,10 @@ from requests_toolbelt import MultipartEncoder
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
-try:
-    from moviepy.editor import VideoFileClip
-except ImportError:
-    print("Fail to import moviepy. Need only for Video upload.")
+# try:
+#     from moviepy.editor import VideoFileClip
+# except ImportError:
+#     print("Fail to import moviepy. Need only for Video upload.")
     
 
 # The urllib library was split into other modules from Python 2 to Python 3
@@ -502,7 +502,8 @@ class InstagramAPI:
             return False
 
     def configureVideo(self, upload_id, video, thumbnail, caption=''):
-        clip = VideoFileClip(video)
+        # clip = VideoFileClip(video)
+        clip = None # TODO Video removed
         self.uploadPhoto(photo=thumbnail, caption=caption, upload_id=upload_id)
         data = json.dumps({
             'upload_id': upload_id,

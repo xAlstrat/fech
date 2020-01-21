@@ -11,3 +11,6 @@
     docker run -d -p 8000:8000 --name fech-container -v /home/ubuntu/fech:/code fech-api
     docker exec -ti fech-container python manage.py migrate
     
+## Run cron
+docker exec -ti fech-container python manage.py runcrons
+    
