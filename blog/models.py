@@ -300,7 +300,7 @@ class Content(CreateMixin, ClusterableModel):
     def __str__(self):
         tz = pytz.timezone("America/Santiago")
         date = format_datetime(self.created_at.astimezone(tz), 'dd/MMM/YYYY', locale='es')
-        return '%s. %s - %s' % (date, self.title, 'Publicado' if self.is_published() else 'No publicado')
+        return '%s. %s - %s' % (date, self.title, self.get_published_label())
 
     def after_save(self, request):
         self.author = request.user
@@ -308,9 +308,25 @@ class Content(CreateMixin, ClusterableModel):
 
     def is_published(self):
         dt_now = now()
-        if (self.publish_at is not None and self.publish_at > dt_now) and (self.unpublish_at is None or self.unpublish_at > dt_now):
+        if (self.publish_at is not None and self.publish_at < dt_now) and (self.unpublish_at is None or self.unpublish_at > dt_now):
             return True
         return False
+
+    def was_unpublished(self):
+        dt_now = now()
+        if self.unpublish_at is not None and self.unpublish_at < dt_now:
+            return True
+        return False
+
+    def get_published_label(self):
+        if self.was_unpublished():
+            return 'Publicación finalizada'
+        if self.is_published():
+            return 'Publicado'
+        dt_now = now()
+        days = (self.publish_at - dt_now).days
+        label = 'queda %d día' if days == 1 else 'quedan %d días'
+        return ('Por publicar (%s)' % label) % days
 
 
 @register_snippet
@@ -362,7 +378,7 @@ class Event(Content):
         time = format_datetime(self.start.astimezone(tz), 'HH:mm', locale='es')
         if self.end:
             time = time + (' - %s' % format_datetime(self.end.astimezone(tz), 'HH:mm', locale='es'))
-        return '%s, %s. %s - %s' % (date, time, self.title, 'Publicado' if self.is_published() else 'No publicado')
+        return '%s, %s. %s - %s' % (date, time, self.title, self.get_published_label())
 
 
 @register_snippet
@@ -417,7 +433,7 @@ class Benefit(Content):
 
     def __str__(self):
         date = format_date(self.start, 'dd/MMM/YYYY', locale='es')
-        return '%s. %s - %s' % (date, self.title, 'Publicado' if self.is_published() else 'No publicado')
+        return '%s. %s - %s' % (date, self.title, self.get_published_label())
 
 
 class Notification(CreateMixin):
