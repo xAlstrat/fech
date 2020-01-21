@@ -211,6 +211,7 @@ class Place(models.Model):
         APIField('lng'),
     ]
 
+
     def __str__(self):
         return '%s - %s' % (self.name, self.address)
 
@@ -252,6 +253,7 @@ class Content(CreateMixin, ClusterableModel):
     tags = TaggableManager(through=ContentTags, blank=True)
     publish_at = models.DateTimeField('Publicar el', default=now)
     unpublish_at = models.DateTimeField('Despublicar el', null=True, blank=True)
+    pinned = models.BooleanField('Destacar', default=False, help_text='Destacar el contenido para que aparezca al comienzo.')
 
 
     search_fields = [
@@ -262,6 +264,7 @@ class Content(CreateMixin, ClusterableModel):
         FieldPanel('title', classname='title'),
         FieldPanel('body', classname="full"),
         ImageChooserPanel('image', heading='heading'),
+        FieldPanel('pinned', classname="full"),
     ]
 
     end_panels = [
@@ -297,11 +300,17 @@ class Content(CreateMixin, ClusterableModel):
     def __str__(self):
         tz = pytz.timezone("America/Santiago")
         date = format_datetime(self.created_at.astimezone(tz), 'dd/MMM/YYYY', locale='es')
-        return '%s. %s' % (date, self.title)
+        return '%s. %s - %s' % (date, self.title, 'Publicado' if self.is_published() else 'No publicado')
 
     def after_save(self, request):
         self.author = request.user
         return self.save()
+
+    def is_published(self):
+        dt_now = now()
+        if (self.publish_at is not None and self.publish_at > dt_now) and (self.unpublish_at is None or self.unpublish_at > dt_now):
+            return True
+        return False
 
 
 @register_snippet
@@ -313,6 +322,7 @@ class Event(Content):
     class Meta:
         verbose_name = "Evento"
         verbose_name_plural = "Eventos"
+        ordering = ('-publish_at',)
 
     search_fields = Content.search_fields + [
 
@@ -352,7 +362,7 @@ class Event(Content):
         time = format_datetime(self.start.astimezone(tz), 'HH:mm', locale='es')
         if self.end:
             time = time + (' - %s' % format_datetime(self.end.astimezone(tz), 'HH:mm', locale='es'))
-        return '%s, %s. %s' % (date, time, self.title)
+        return '%s, %s. %s - %s' % (date, time, self.title, 'Publicado' if self.is_published() else 'No publicado')
 
 
 @register_snippet
@@ -361,6 +371,7 @@ class New(Content):
     class Meta:
         verbose_name = "Noticia"
         verbose_name_plural = "Noticias"
+        ordering = ('-publish_at',)
 
     search_fields = Content.search_fields + [
     ]
@@ -382,6 +393,7 @@ class Benefit(Content):
     class Meta:
         verbose_name = "Beneficio"
         verbose_name_plural = "Beneficios"
+        ordering = ('-publish_at',)
 
     search_fields = Content.search_fields + [
     ]
@@ -405,7 +417,7 @@ class Benefit(Content):
 
     def __str__(self):
         date = format_date(self.start, 'dd/MMM/YYYY', locale='es')
-        return '%s. %s' % (date, self.title)
+        return '%s. %s - %s' % (date, self.title, 'Publicado' if self.is_published() else 'No publicado')
 
 
 class Notification(CreateMixin):
@@ -457,6 +469,7 @@ class Sharing(CreateMixin):
     SOCIAL_TWITTER = 'TWITTER'
     publish_at = models.DateTimeField("Fecha de publicación", default=now)
     published = models.BooleanField("Se ha publicado", default=False)
+    description = models.TextField("Descripción", max_length=1024, help_text='Número máximo de carácteres depende de la red social utilizada.')
     channel = models.CharField('Red social', max_length=32, choices=[
         (SOCIAL_FACEBOOK, 'Facebook'),
         (SOCIAL_INSTAGRAM, 'Instagram'),
@@ -470,6 +483,7 @@ class Sharing(CreateMixin):
         FieldRowPanel([
             FieldPanel('publish_at', classname="col6"),
             FieldPanel('channel', classname="col6"),
+            FieldPanel('description', classname="col12"),
             ReadOnlyPanel('published', classname="col12", heading='¿Publicado?'),
         ], heading="Publicar el",
             classname="collapsible collapsed")
@@ -478,6 +492,7 @@ class Sharing(CreateMixin):
     api_fields = Content.api_fields + [
         APIField('publish_at'),
         APIField('published'),
+        APIField('description'),
         APIField('channel'),
     ]
 

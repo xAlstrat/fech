@@ -6,7 +6,8 @@ from django.utils.timezone import now
 from django.core import mail
 from pyfcm import FCMNotification
 
-
+from fech.settings.base import FIREBASE_API_KEY
+from django.template import Template
 """
 Given a query set, it obtains a filtered notification list
 """
@@ -119,10 +120,6 @@ class PushNotificationSender(BaseNotificationSender):
     object_notification_mapping = {
         'subject': 'title',
         'body': 'body_as_html',
-        'from_email': '',
-        'to': '',
-        'cc': '',
-        'reply_to': ''
     }
 
     def __init__(self, provider, object_field):
@@ -132,41 +129,20 @@ class PushNotificationSender(BaseNotificationSender):
     def get_object(self, notification):
         return getattr(notification, self.object_field)
 
-    def build_notification_message(self, notification, users):
+    def build_notification_body(self, notification):
         object_data = self.get_object(notification)
-        template = get_template('notifications/default_email.html')
-        msg = EmailMultiAlternatives(
-            subject=getattr(object_data, self.object_notification_mapping.get('subject')),
-            body='',
-            from_email='Notificaciones <' + 'notificationes@fech.cl' + '>',
-            to=list(map(lambda u: u.email, users)),
-            cc=[],
-            reply_to=['dudas@fech.cl']
-        )
+        template_str = ''
+        template = Template(template_str)
 
-        html_message = template.render(object_data.__dict__)
-        msg.attach_alternative(html_message, "text/html")
-        msg.send()
-        return msg
-
-    def build_messages(self, notifications, users):
-        messages = []
-        for notification in notifications:
-            messages.append(self.build_notification_message(notification, users))
-        return messages
+        return template.render(object_data.__dict__)
 
     def send(self, notifications, users):
-        push_service = FCMNotification(api_key="AIzaSyBecb3YDmawIkyXsoM6oJjLst3b1GX9o8Q")
-        push_service.notify_topic_subscribers(topic_name="all", message_body='message body')
-        subscribed = push_service.subscribe_registration_ids_to_topic(tokens, 'test')
-        # returns True if successful, raises error if unsuccessful
-
-        unsubscribed = push_service.unsubscribe_registration_ids_from_topic(tokens, 'test')
-        # returns True if successful, raises error if unsuccessful
-
-        messages = self.build_messages(notifications, users)
-        connection = mail.get_connection()
-        if len(messages) > 0:
-            connection.send_messages(messages)
-            return True
-        return False
+        for notification in notifications:
+            object_data = self.get_object(notification)
+            push_service = FCMNotification(api_key=FIREBASE_API_KEY)
+            push_service.notify_topic_subscribers(
+                topic_name="global",
+                message_body=self.build_notification_body(notification),
+                message_title=getattr(object_data, self.object_notification_mapping.get('subject'))
+            )
+        return True

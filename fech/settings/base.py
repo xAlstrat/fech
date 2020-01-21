@@ -204,6 +204,7 @@ FCM_DJANGO_SETTINGS = {
         "ONE_DEVICE_PER_USER": False,
         "DELETE_INACTIVE_DEVICES": False,
 }
+FIREBASE_API_KEY = os.getenv('FIREBASE_API_KEY')
 
 
 # Social publications
