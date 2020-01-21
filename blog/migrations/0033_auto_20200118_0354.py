@@ -13,6 +13,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='sharing',
             name='description',
-            field=models.TextField(help_text='Número máximo de carácteres depende de la red social utilizada.', max_length=1024, verbose_name='Descripción'),
+            field=models.TextField(help_text='Número máximo de carácteres depende de la red social utilizada.', max_length=1024, verbose_name='Descripción', null=True),
         ),
     ]
