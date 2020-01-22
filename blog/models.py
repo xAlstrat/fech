@@ -318,15 +318,45 @@ class Content(CreateMixin, ClusterableModel):
             return True
         return False
 
+    def is_pinned(self):
+        return self.pinned
+
     def get_published_label(self):
         if self.was_unpublished():
-            return 'Publicación finalizada'
-        if self.is_published():
-            return 'Publicado'
-        dt_now = now()
-        days = (self.publish_at - dt_now).days
-        label = 'queda %d día' if days == 1 else 'quedan %d días'
-        return ('Por publicar (%s)' % label) % days
+            label = 'Publicación finalizada'
+        elif self.is_published():
+            label = 'Publicado'
+        else:
+            dt_now = now()
+            days = (self.publish_at - dt_now).days
+            label = 'queda %d día' if days == 1 else 'quedan %d días'
+            label = ('Por publicar (%s)' % label) % days
+        label = '%s%s' % ('📌 ' if self.is_pinned() else '', label)
+        return label + self.get_notification_labels() + self.get_sharing_labels()
+
+    def get_notification_labels(self):
+        label = ''
+        mobile_notifications = self.notifications.filter(channel='MOBILE')
+        email_notifications = self.notifications.filter(channel='EMAIL')
+        if mobile_notifications.count():
+            count = mobile_notifications.filter(notified=True).count()
+            label = label + ' 🔔%d' % count
+        if email_notifications.count():
+            count = email_notifications.filter(notified=True).count()
+            label = label + ' @%d' % count
+        return label
+
+    def get_sharing_labels(self):
+        label = ''
+        twitter_notifications = self.sharings.filter(channel='TWITTER')
+        ig_notifications = self.sharings.filter(channel='INSTAGRAM')
+        if twitter_notifications.count():
+            count = twitter_notifications.filter(published=True).count()
+            label = label + ' 🕊%d' % count
+        if ig_notifications.count():
+            count = ig_notifications.filter(published=True).count()
+            label = label + ' ⧇%d' % count
+        return label
 
 
 @register_snippet
