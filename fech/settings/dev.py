@@ -7,7 +7,7 @@ DEBUG = True
 SECRET_KEY = 'sq4jcgxa4=pkvve!#2!wv&d9(yu2!(slu*l))nqy0a5_dxx*1b'
 
 # SECURITY WARNING: define the correct hosts in production!
-ALLOWED_HOSTS = ['*'] 
+ALLOWED_HOSTS = ['*']
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 

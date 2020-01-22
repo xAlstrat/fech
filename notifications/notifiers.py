@@ -96,7 +96,7 @@ class EmailNotificationSender(BaseNotificationSender):
             reply_to=['dudas@fech.cl']
         )
 
-        html_message = template.render(Context(object_data.__dict__))
+        html_message = template.render(object_data.__dict__)
         msg.attach_alternative(html_message, "text/html")
         msg.send()
         return msg
