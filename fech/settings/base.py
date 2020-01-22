@@ -194,6 +194,7 @@ EMAIL_USE_TLS = True
 
 # Cron jobs
 CRON_CLASSES = [
+    "blog.cron.PostPublicationsJob",
     "blog.cron.SendNotificationsJob",
 ]
 

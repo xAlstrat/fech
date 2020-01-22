@@ -7,7 +7,8 @@ from django.core import mail
 from pyfcm import FCMNotification
 
 from fech.settings.base import FIREBASE_API_KEY
-from django.template import Template
+from django.template import Template, Context
+
 """
 Given a query set, it obtains a filtered notification list
 """
@@ -45,11 +46,13 @@ class BaseNotificationProvider:
 class BaseNotificationSender:
     channel = None
 
-    def __init__(self, provider):
+    def __init__(self, provider, title='Tienes una notificación'):
         self.provider = provider
         self.notifications = self.provider.get_notifications(self.channel)
+        self.title = title
 
     def send_notifications(self, users):
+        print('Sending %d notifications through %s' % (self.notifications.count(), self.channel))
         sent = self.send(self.notifications, users)
         if sent:
             self.after_send()
@@ -74,8 +77,8 @@ class EmailNotificationSender(BaseNotificationSender):
         'reply_to': ''
     }
 
-    def __init__(self, provider, object_field):
-        super().__init__(provider)
+    def __init__(self, provider, object_field, title='Tienes una notificación'):
+        super().__init__(provider, title='Tienes una notificación')
         self.object_field = object_field
 
     def get_object(self, notification):
@@ -85,15 +88,15 @@ class EmailNotificationSender(BaseNotificationSender):
         object_data = self.get_object(notification)
         template = get_template('notifications/default_email.html')
         msg = EmailMultiAlternatives(
-            subject=getattr(object_data, self.object_notification_mapping.get('subject')),
+            subject=self.title,
             body='',
-            from_email='Notificaciones <' + 'notificationes@fech.cl' + '>',
+            from_email='Notificaciones <' + 'report@suplebest.cl' + '>',
             to=list(map(lambda u: u.email, users)),
             cc=[],
             reply_to=['dudas@fech.cl']
         )
 
-        html_message = template.render(object_data.__dict__)
+        html_message = template.render(Context(object_data.__dict__))
         msg.attach_alternative(html_message, "text/html")
         msg.send()
         return msg
@@ -122,27 +125,28 @@ class PushNotificationSender(BaseNotificationSender):
         'body': 'body_as_html',
     }
 
-    def __init__(self, provider, object_field):
-        super().__init__(provider)
+    def __init__(self, provider, object_field, title):
+        super().__init__(provider, title=title)
         self.object_field = object_field
+
+
 
     def get_object(self, notification):
         return getattr(notification, self.object_field)
 
     def build_notification_body(self, notification):
         object_data = self.get_object(notification)
-        template_str = ''
+        template_str = getattr(object_data, self.object_notification_mapping.get('subject'))
         template = Template(template_str)
-
-        return template.render(object_data.__dict__)
+        return template.render(Context(object_data.__dict__))
 
     def send(self, notifications, users):
         for notification in notifications:
             object_data = self.get_object(notification)
             push_service = FCMNotification(api_key=FIREBASE_API_KEY)
-            push_service.notify_topic_subscribers(
+            response = push_service.notify_topic_subscribers(
                 topic_name="global",
                 message_body=self.build_notification_body(notification),
-                message_title=getattr(object_data, self.object_notification_mapping.get('subject'))
+                message_title=self.title
             )
         return True

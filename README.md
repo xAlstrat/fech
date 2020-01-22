@@ -12,5 +12,6 @@
     docker exec -ti fech-container python manage.py migrate
     
 ## Run cron
-docker exec -ti fech-container python manage.py runcrons
+
+    docker exec -ti fech-container python manage.py runcrons
     
