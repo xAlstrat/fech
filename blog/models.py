@@ -286,6 +286,8 @@ class Content(CreateMixin, ClusterableModel):
         APIField('image'),
         APIField('author', serializer=UserSerializer()),
         APIField('tags'),
+        APIField('publish_at'),
+        APIField('pinned'),
     ]
 
     @property

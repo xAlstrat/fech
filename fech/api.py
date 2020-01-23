@@ -1,6 +1,7 @@
 # api.py
 from modelcluster.models import get_all_child_relations
 from wagtail.api.v2.endpoints import PagesAPIEndpoint, BaseAPIEndpoint
+from wagtail.api.v2.filters import OrderingFilter
 from wagtail.api.v2.router import WagtailAPIRouter
 from wagtail.api.v2.serializers import ChildRelationField, BaseSerializer
 from wagtail.images.api.v2.endpoints import ImagesAPIEndpoint
@@ -13,6 +14,9 @@ class SnippetApiEndpoint(BaseAPIEndpoint):
     known_query_parameters = BaseAPIEndpoint.known_query_parameters.union([
         'type',
     ])
+    filter_backends = [
+        OrderingFilter
+    ]
 
 
 class EventSnippetAPIEndpoint(SnippetApiEndpoint):
@@ -21,6 +25,7 @@ class EventSnippetAPIEndpoint(SnippetApiEndpoint):
 
 class NewSnippetAPIEndpoint(SnippetApiEndpoint):
     model = New
+
 
 
 class BenefitSnippetAPIEndpoint(SnippetApiEndpoint):
