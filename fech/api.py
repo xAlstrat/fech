@@ -22,6 +22,12 @@ class CustomFilterBackend(BaseFilterBackend):
         Eg: ?title=James Joyce
         """
         fields = set(view.get_available_fields(queryset.model, db_fields_only=True))
+        print('-----')
+        print(fields)
+        query_parameters = view.request.GET.keys()
+        query_parameters = set(filter(lambda param: re.sub(r'__.*$', '', param) in fields and param.find('__') != -1, query_parameters))
+        fields = fields.union(query_parameters)
+        print(fields)
 
         for field_name, value in request.GET.items():
             if field_name in fields:
@@ -72,14 +78,14 @@ class SnippetApiEndpoint(BaseAPIEndpoint):
         OrderingFilter
     ]
 
-    @classmethod
-    def get_available_fields(cls, model, db_fields_only=False):
-        return super().get_available_fields(model, db_fields_only) + [
-            'publish_at__lte',
-            'publish_at__lt',
-            'publish_at__gt',
-            'publish_at__gte',
-        ]
+    # @classmethod
+    # def get_available_fields(cls, model, db_fields_only=False):
+    #     return super().get_available_fields(model, db_fields_only) + [
+    #         'publish_at__lte',
+    #         'publish_at__lt',
+    #         'publish_at__gt',
+    #         'publish_at__gte',
+    #     ]
 
     def check_query_parameters(self, queryset):
         """
