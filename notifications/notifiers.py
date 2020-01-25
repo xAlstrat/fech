@@ -5,6 +5,7 @@ from django.utils.timezone import now
 
 from django.core import mail
 from pyfcm import FCMNotification
+from wagtail.api.v2.serializers import BaseSerializer
 
 from fech.settings.base import FIREBASE_API_KEY
 from django.template import Template, Context
@@ -125,14 +126,13 @@ class PushNotificationSender(BaseNotificationSender):
         'body': 'body_as_html',
     }
 
-    def __init__(self, provider, object_field, title):
-        super().__init__(provider, title=title)
-        self.object_field = object_field
-
-
-
     def get_object(self, notification):
         return getattr(notification, self.object_field)
+
+    def __init__(self, provider, object_field, title, serializer):
+        super().__init__(provider, title=title)
+        self.object_field = object_field
+        self.serializer = serializer
 
     def build_notification_body(self, notification):
         object_data = self.get_object(notification)
@@ -147,6 +147,11 @@ class PushNotificationSender(BaseNotificationSender):
             response = push_service.notify_topic_subscribers(
                 topic_name="global",
                 message_body=self.build_notification_body(notification),
-                message_title=self.title
+                message_title=self.title,
+                click_action='FLUTTER_NOTIFICATION_CLICK',
+                data_message={
+                    'type': self.object_field,
+                    'id': object_data.pk
+                }
             )
         return True

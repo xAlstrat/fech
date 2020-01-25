@@ -1,13 +1,66 @@
 # api.py
+import re
+
+from django.db import models
 from modelcluster.models import get_all_child_relations
+from rest_framework.filters import BaseFilterBackend
+from taggit.managers import TaggableManager
 from wagtail.api.v2.endpoints import PagesAPIEndpoint, BaseAPIEndpoint
-from wagtail.api.v2.filters import OrderingFilter
+from wagtail.api.v2.filters import OrderingFilter, FieldsFilter
 from wagtail.api.v2.router import WagtailAPIRouter
 from wagtail.api.v2.serializers import ChildRelationField, BaseSerializer
+from wagtail.api.v2.utils import parse_boolean, BadRequestError
 from wagtail.images.api.v2.endpoints import ImagesAPIEndpoint
 from wagtail.documents.api.v2.endpoints import DocumentsAPIEndpoint
 
 from blog.models import Event, New, Benefit, Place
+
+class CustomFilterBackend(BaseFilterBackend):
+    def filter_queryset(self, request, queryset, view):
+        """
+        This performs field level filtering on the result set
+        Eg: ?title=James Joyce
+        """
+        fields = set(view.get_available_fields(queryset.model, db_fields_only=True))
+
+        for field_name, value in request.GET.items():
+            if field_name in fields:
+                lookup = ''
+                if '__' in field_name:
+                    i = field_name.find('__')
+                    lookup = field_name[i:]
+                    field_name = field_name[:i]
+                try:
+                    field = queryset.model._meta.get_field(field_name)
+                except LookupError:
+                    field = None
+
+                # Convert value into python
+                try:
+                    if isinstance(field, (models.BooleanField, models.NullBooleanField)):
+                        value = parse_boolean(value)
+                    elif isinstance(field, (models.IntegerField, models.AutoField)):
+                        value = int(value)
+                except ValueError as e:
+                    raise BadRequestError("field filter error. '%s' is not a valid value for %s (%s)" % (
+                        value,
+                        field_name,
+                        str(e)
+                    ))
+
+                if isinstance(field, TaggableManager):
+                    for tag in value.split(','):
+                        queryset = queryset.filter(**{field_name + '__name': tag})
+
+                    # Stick a message on the queryset to indicate that tag filtering has been performed
+                    # This will let the do_search method know that it must raise an error as searching
+                    # and tag filtering at the same time is not supported
+                    queryset._filtered_by_tag = True
+                else:
+                    field_name = field_name + lookup
+                    queryset = queryset.filter(**{field_name: value})
+
+        return queryset
 
 
 class SnippetApiEndpoint(BaseAPIEndpoint):
@@ -15,8 +68,31 @@ class SnippetApiEndpoint(BaseAPIEndpoint):
         'type',
     ])
     filter_backends = [
+        CustomFilterBackend,
         OrderingFilter
     ]
+
+    @classmethod
+    def get_available_fields(cls, model, db_fields_only=False):
+        return super().get_available_fields(model, db_fields_only) + [
+            'publish_at__lte',
+            'publish_at__lt',
+            'publish_at__gt',
+            'publish_at__gte',
+        ]
+
+    def check_query_parameters(self, queryset):
+        """
+        Ensure that only valid query paramters are included in the URL.
+        """
+        query_parameters = self.request.GET.keys()
+        query_parameters = set(map(lambda param: re.sub(r'__.*$', '', param ), query_parameters))
+
+        # All query paramters must be either a database field or an operation
+        allowed_query_parameters = set(self.get_available_fields(queryset.model, db_fields_only=True)).union(self.known_query_parameters)
+        unknown_parameters = query_parameters - allowed_query_parameters
+        if unknown_parameters:
+            raise BadRequestError("query parameter is not an operation or a recognised field: %s" % ', '.join(sorted(unknown_parameters)))
 
 
 class EventSnippetAPIEndpoint(SnippetApiEndpoint):
