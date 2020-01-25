@@ -145,7 +145,7 @@ class PushNotificationSender(BaseNotificationSender):
             object_data = self.get_object(notification)
             push_service = FCMNotification(api_key=FIREBASE_API_KEY)
             response = push_service.notify_topic_subscribers(
-                topic_name="global",
+                topic_name=self.object_field,
                 message_body=self.build_notification_body(notification),
                 message_title=self.title,
                 click_action='FLUTTER_NOTIFICATION_CLICK',

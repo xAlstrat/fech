@@ -300,7 +300,7 @@ class Content(CreateMixin, ClusterableModel):
         return rich_text.__html__()
 
     def __str__(self):
-        date = format_datetime(self.created_at.astimezone(pytz.utc), 'dd/MMM/YYYY', locale='es')
+        date = format_datetime(self.created_at.astimezone(pytz.timezone("America/Santiago")), 'dd/MMM/YYYY', locale='es')
         return '%s. %s - %s' % (date, self.title, self.get_published_label())
 
     def after_save(self, request):
@@ -404,7 +404,7 @@ class Event(Content):
     # ])
 
     def __str__(self):
-        tz = pytz.utc
+        tz = pytz.timezone("America/Santiago")
         date = format_datetime(self.start.astimezone(tz), 'dd/MMM/YYYY', locale='es')
         time = format_datetime(self.start.astimezone(tz), 'HH:mm', locale='es')
         if self.end:
