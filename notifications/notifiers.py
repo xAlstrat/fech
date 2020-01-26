@@ -128,9 +128,10 @@ class PushNotificationSender(BaseNotificationSender):
     def get_object(self, notification):
         return getattr(notification, self.object_field)
 
-    def __init__(self, provider, object_field, title):
+    def __init__(self, provider, object_field, title, topic='global'):
         super().__init__(provider, title=title)
         self.object_field = object_field
+        self.topic = topic
 
     def build_notification_body(self, notification):
         object_data = self.get_object(notification)
@@ -138,12 +139,18 @@ class PushNotificationSender(BaseNotificationSender):
         template = Template(template_str)
         return template.render(Context(object_data.__dict__))
 
+    def get_topic(self, object_data):
+        template = Template(self.topic)
+        topic = template.render(Context(object_data.__dict__))
+        return topic
+
+
     def send(self, notifications, users):
         for notification in notifications:
             object_data = self.get_object(notification)
             push_service = FCMNotification(api_key=FIREBASE_API_KEY)
             response = push_service.notify_topic_subscribers(
-                topic_name=self.object_field,
+                topic_name=self.get_topic(object_data),
                 message_body=self.build_notification_body(notification),
                 message_title=self.title,
                 click_action='FLUTTER_NOTIFICATION_CLICK',

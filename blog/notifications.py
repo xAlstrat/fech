@@ -26,13 +26,13 @@ def send_email_notifications():
 def send_push_notifications():
     users = User.objects.all()
     provider = BaseNotificationProvider(EventNotification.objects)
-    sender = PushNotificationSender(provider, 'event', title='¡Se ha añadido un evento!')
+    sender = PushNotificationSender(provider, 'event', title='¡Se ha añadido un evento!', topic='events')
     sender.send_notifications(users)
 
     provider = BaseNotificationProvider(NewNotification.objects)
-    sender = PushNotificationSender(provider, 'new', title='¡Se ha añadido una noticia!')
+    sender = PushNotificationSender(provider, 'new', title='¡Se ha añadido una noticia!', topic='news')
     sender.send_notifications(users)
 
     provider = BaseNotificationProvider(BenefitNotification.objects)
-    sender = PushNotificationSender(provider, 'benefit', title='¡Hay un nuevo beneficio para ti!')
+    sender = PushNotificationSender(provider, 'benefit', title='¡Hay un nuevo beneficio para ti!', topic='eventsAt{{place_id}}')
     sender.send_notifications(users)
