@@ -19,7 +19,6 @@ RUN pip install gunicorn
 COPY . /code/
 
 RUN python manage.py migrate
-RUN python manage.py collectstatic
 
 RUN useradd wagtail
 RUN chown -R wagtail /code
