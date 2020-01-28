@@ -2,6 +2,7 @@
 import re
 
 from django.db import models
+from django.utils.timezone import now
 from modelcluster.models import get_all_child_relations
 from rest_framework.filters import BaseFilterBackend
 from taggit.managers import TaggableManager
@@ -78,6 +79,8 @@ class SnippetApiEndpoint(BaseAPIEndpoint):
         OrderingFilter
     ]
 
+
+
     # @classmethod
     # def get_available_fields(cls, model, db_fields_only=False):
     #     return super().get_available_fields(model, db_fields_only) + [
@@ -104,11 +107,15 @@ class SnippetApiEndpoint(BaseAPIEndpoint):
 class EventSnippetAPIEndpoint(SnippetApiEndpoint):
     model = Event
 
+    def get_queryset(self):
+        return self.model.objects.exclude(unpublish_at__isnull=False, unpublish_at__lte=now()).all().order_by('id')
+
 
 class NewSnippetAPIEndpoint(SnippetApiEndpoint):
     model = New
 
-
+    def get_queryset(self):
+        return self.model.objects.exclude(unpublish_at__isnull=False, unpublish_at__lte=now()).all().order_by('id')
 
 class BenefitSnippetAPIEndpoint(SnippetApiEndpoint):
     model = Benefit
@@ -123,6 +130,9 @@ class BenefitSnippetAPIEndpoint(SnippetApiEndpoint):
     #     'field_2',
     #     'field_3',
     # ]
+
+    def get_queryset(self):
+        return self.model.objects.exclude(unpublish_at__isnull=False, unpublish_at__lte=now()).all().order_by('id')
 
 
 class PlaceSnippetAPIEndpoint(SnippetApiEndpoint):
