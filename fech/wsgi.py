@@ -17,4 +17,6 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "fech.settings.production")
 application = get_wsgi_application()
 
 
-application = WhiteNoise(application, root='./static')
+application = WhiteNoise(application)
+application.add_files('./static')
+application.add_files('./media')
