@@ -4,8 +4,8 @@
 
     python manage.py migrate
     python manage.py runserver
-
-## Run project w/ Docker
+    
+## Production project w/ Docker
 
     docker build -t fech-api .
     docker run -d -p 8000:8000 --name fech-container -v /home/ubuntu/fech:/code fech-api
