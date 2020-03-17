@@ -19,4 +19,4 @@ application = get_wsgi_application()
 
 application = WhiteNoise(application)
 application.add_files('./static', prefix='static')
-application.add_files('./media')
+application.add_files('./media', prefix='media')
