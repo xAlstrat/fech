@@ -1,17 +1,55 @@
-# FECH Wagtail
+## FECH
 
-## Run project
+### Pre-Requisites
 
-    python manage.py migrate
-    python manage.py runserver
+Docker, Docker-Compose
+
+#### Install Docker
+
+https://get.docker.com/
+
+    curl -fsSL https://get.docker.com -o get-docker.sh
+    sh get-docker.sh
     
-## Production project w/ Docker
-
-    docker build -t fech-api .
-    docker run -d -p 8000:8000 --name fech-container -v /home/ubuntu/fech:/code fech-api
-    docker exec -ti fech-container python manage.py migrate
     
-## Run cron
+Make sure to give the current user to docker group after installation:
 
-    docker exec -ti fech-container python manage.py runcrons
+    sudo usermod -aG docker $USER
     
+Before using docker, the terminal or SHH connection should be reopened.
+    
+#### Install DockerCompose 
+
+https://docs.docker.com/compose/install/
+
+### Installation Localhost/Development (For Ubuntu)
+
+#### Run backend
+
+Create the .env file:
+
+    cp .env.example .env
+    
+Update env file with the desired values.
+    
+Build with docker:
+
+    docker-compose up -d --build backend_dev
+    
+Backend should be running on http://localhost:8000.
+
+### Installation Production (For Ubuntu)
+    
+#### Run backend
+
+Create the .env file:
+
+    cp .env.example .env
+    
+Update env file with the desired values.
+
+Build with docker:
+
+    docker-compose up -d --build backend
+
+Backend should be running on http://localhost:8000.

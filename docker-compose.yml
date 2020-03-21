@@ -20,7 +20,7 @@ services:
     volumes:
       - .:/code
     ports:
-      - 8000:8000
+      - 80:8000
     depends_on:
       - postgres
     container_name: fech_backend
@@ -30,6 +30,8 @@ services:
       - /django-entrypoint-prod.sh
   backend_dev:
     <<: *backend
+    ports:
+      - 8000:8000
     # command: python manage.py runserver 0.0.0.0:8000
     container_name: fech_backend_dev
     entrypoint:
