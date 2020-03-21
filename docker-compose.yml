@@ -1,0 +1,39 @@
+version: '3.7'
+
+services:
+  postgres:
+    restart: on-failure
+    image: postgres:10.6
+    environment:
+      # DATABASE_HOST: $DATABASE_HOST
+      POSTGRES_USER: $DATABASE_USER
+      POSTGRES_PASSWORD: $DATABASE_PASSWORD
+    ports:
+      - 5432:5432
+    container_name: fech_postgres
+    volumes:
+      - postgresdata:/var/lib/postgresql/data
+  backend: &backend
+    restart: always
+    build: .
+    image: fech/backend
+    volumes:
+      - .:/code
+    ports:
+      - 8000:8000
+    depends_on:
+      - postgres
+    container_name: fech_backend
+    environment:
+      - PYTHONUNBUFFERED=1
+    entrypoint:
+      - /django-entrypoint-prod.sh
+  backend_dev:
+    <<: *backend
+    # command: python manage.py runserver 0.0.0.0:8000
+    container_name: fech_backend_dev
+    entrypoint:
+      - /django-entrypoint-dev.sh
+
+volumes:
+  postgresdata:
