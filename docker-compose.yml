@@ -26,6 +26,7 @@ services:
     container_name: fech_backend
     environment:
       - PYTHONUNBUFFERED=1
+      - DJANGO_SETTINGS_MODULE=fech.settings.production
     entrypoint:
       - /django-entrypoint-prod.sh
   backend_dev:
