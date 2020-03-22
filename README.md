@@ -53,3 +53,8 @@ Build with docker:
     docker-compose up -d --build backend
 
 Backend should be running on http://localhost:8000.
+
+### Create first admin
+
+    docker-compose exec backend python manage.py createsuperuser
+    

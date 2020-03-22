@@ -9,5 +9,3 @@ try:
     from .local import *
 except ImportError:
     pass
-
-print('Running as production')
