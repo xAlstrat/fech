@@ -20,9 +20,10 @@ services:
     volumes:
       - .:/code
     ports:
-      - 80:8000
+      - 8000:8000
     depends_on:
       - postgres
+      - nginx
     container_name: fech_backend
     environment:
       - PYTHONUNBUFFERED=1
@@ -33,10 +34,22 @@ services:
     <<: *backend
     ports:
       - 8000:8000
-    # command: python manage.py runserver 0.0.0.0:8000
     container_name: fech_backend_dev
     entrypoint:
       - /django-entrypoint-dev.sh
+  nginx:
+    restart: on-failure
+    build:
+      context: .
+      dockerfile: DockerfileNginx
+    image: fech/backend-nginx
+    container_name: fech_backend_nginx
+    environment:
+      - DOMAIN=${DOMAIN}
+      - EMAIL=admin@suplebest.cl
+    network_mode: "host"
+    volumes:
+      - /etc/letsencrypt/:/etc/letsencrypt/
 
 volumes:
   postgresdata:
