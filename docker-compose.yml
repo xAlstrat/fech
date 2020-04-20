@@ -37,6 +37,9 @@ services:
     container_name: fech_backend_dev
     entrypoint:
       - /django-entrypoint-dev.sh
+    environment:
+      - PYTHONUNBUFFERED=1
+      - DJANGO_SETTINGS_MODULE=fech.settings.dev
   nginx:
     restart: on-failure
     build:

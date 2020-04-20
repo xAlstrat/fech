@@ -586,3 +586,53 @@ class NewSharing(Sharing, Orderable):
         ordering = ['-created_at']
 
 register_snippet(User)
+
+
+class RawContent(CreateMixin, ClusterableModel):
+    image = models.ForeignKey(
+        'wagtailimages.Image', on_delete=models.DO_NOTHING, related_name='+', verbose_name="Imagen"
+    )
+    title = models.CharField(max_length=250, verbose_name='Título')
+    description = RichTextField(blank=True, verbose_name="Descripción")
+    address = models.CharField(max_length=256, blank=True, verbose_name="Dirección")
+    published = models.BooleanField('Publicado', default=True)
+
+    class Meta:
+        abstract = True
+
+    search_fields = [
+    ]
+
+    panels = [
+        FieldPanel('title', classname='title'),
+        FieldPanel('description', classname="full"),
+        FieldPanel('address', classname="full"),
+        ImageChooserPanel('image', heading='heading'),
+        FieldPanel('published', classname="full"),
+    ]
+
+    api_fields = [
+        APIField('title'),
+        APIField('description', serializer=RichTextRendereableField()),
+        APIField('image'),
+        APIField('address'),
+        APIField('published'),
+    ]
+
+    @property
+    def image_path(self):
+        return self.image.file.path
+
+    @property
+    def body_as_html(self):
+        rich_text = RichText(self.description)
+        return rich_text.__html__()
+
+    def __str__(self):
+        return self.title
+
+
+class CCEE(RawContent):
+    pass
+
+register_snippet(CCEE)

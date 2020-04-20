@@ -14,7 +14,8 @@ from wagtail.api.v2.utils import parse_boolean, BadRequestError
 from wagtail.images.api.v2.endpoints import ImagesAPIEndpoint
 from wagtail.documents.api.v2.endpoints import DocumentsAPIEndpoint
 
-from blog.models import Event, New, Benefit, Place
+from blog.models import Event, New, Benefit, Place, CCEE
+
 
 class CustomFilterBackend(BaseFilterBackend):
     def filter_queryset(self, request, queryset, view):
@@ -144,6 +145,13 @@ class PlaceSnippetAPIEndpoint(SnippetApiEndpoint):
         'lng',
     ]
 
+
+class CCEESnippetAPIEndpoint(SnippetApiEndpoint):
+    model = CCEE
+
+    def get_queryset(self):
+        return self.model.objects.filter(published=True).all().order_by('title')
+
 # Create the router. "wagtailapi" is the URL namespace
 api_router = WagtailAPIRouter('wagtailapi')
 
@@ -158,3 +166,4 @@ api_router.register_endpoint('events', EventSnippetAPIEndpoint)
 api_router.register_endpoint('benefits', BenefitSnippetAPIEndpoint)
 api_router.register_endpoint('news', NewSnippetAPIEndpoint)
 api_router.register_endpoint('places', PlaceSnippetAPIEndpoint)
+api_router.register_endpoint('ccees', CCEESnippetAPIEndpoint)
