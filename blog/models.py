@@ -596,6 +596,7 @@ class RawContent(CreateMixin, ClusterableModel):
     description = RichTextField(blank=True, verbose_name="Descripción")
     address = models.CharField(max_length=256, blank=True, verbose_name="Dirección")
     published = models.BooleanField('Publicado', default=True)
+    pinned = models.BooleanField('Fijado', default=False)
 
     class Meta:
         abstract = True
@@ -609,6 +610,7 @@ class RawContent(CreateMixin, ClusterableModel):
         FieldPanel('address', classname="full"),
         ImageChooserPanel('image', heading='heading'),
         FieldPanel('published', classname="full"),
+        FieldPanel('pinned', classname="full"),
     ]
 
     api_fields = [
@@ -617,6 +619,7 @@ class RawContent(CreateMixin, ClusterableModel):
         APIField('image'),
         APIField('address'),
         APIField('published'),
+        APIField('pinned'),
     ]
 
     @property
