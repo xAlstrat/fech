@@ -593,7 +593,7 @@ class RawContent(CreateMixin, ClusterableModel):
         'wagtailimages.Image', on_delete=models.DO_NOTHING, related_name='+', verbose_name="Imagen"
     )
     title = models.CharField(max_length=250, verbose_name='Título')
-    description = RichTextField(blank=True, verbose_name="Descripción")
+    body = RichTextField(blank=True, verbose_name="Descripción")
     address = models.CharField(max_length=256, blank=True, verbose_name="Dirección")
     published = models.BooleanField('Publicado', default=True)
     pinned = models.BooleanField('Fijado', default=False)
@@ -606,7 +606,7 @@ class RawContent(CreateMixin, ClusterableModel):
 
     panels = [
         FieldPanel('title', classname='title'),
-        FieldPanel('description', classname="full"),
+        FieldPanel('body', classname="full"),
         FieldPanel('address', classname="full"),
         ImageChooserPanel('image', heading='heading'),
         FieldPanel('published', classname="full"),
@@ -615,7 +615,7 @@ class RawContent(CreateMixin, ClusterableModel):
 
     api_fields = [
         APIField('title'),
-        APIField('description', serializer=RichTextRendereableField()),
+        APIField('body', serializer=RichTextRendereableField()),
         APIField('image'),
         APIField('address'),
         APIField('published'),
@@ -628,7 +628,7 @@ class RawContent(CreateMixin, ClusterableModel):
 
     @property
     def body_as_html(self):
-        rich_text = RichText(self.description)
+        rich_text = RichText(self.body)
         return rich_text.__html__()
 
     def __str__(self):
