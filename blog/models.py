@@ -682,6 +682,7 @@ class FileContent(RawContent):
         APIField('image'),
         APIField('file'),
         APIField('published'),
+        APIField('publish_at'),
         APIField('pinned'),
     ]
 
