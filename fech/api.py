@@ -161,21 +161,21 @@ class TransparencySnippetAPIEndpoint(SnippetApiEndpoint):
     model = Transparency
 
     def get_queryset(self):
-        return self.model.objects.filter(published=True).all().order_by('title')
+        return self.model.objects.filter(published=True).all().order_by('-publish_at')
 
 
 class ArchiveSnippetAPIEndpoint(SnippetApiEndpoint):
     model = Archive
 
     def get_queryset(self):
-        return self.model.objects.filter(published=True).all().order_by('-published_at')
+        return self.model.objects.filter(published=True).all().order_by('-publish_at')
 
 
 class CEFECHSnippetAPIEndpoint(SnippetApiEndpoint):
     model = CEFECHContent
 
     def get_queryset(self):
-        return self.model.objects.filter(published=True).all().order_by('-published_at')
+        return self.model.objects.filter(published=True).all().order_by('-publish_at')
 
 # Create the router. "wagtailapi" is the URL namespace
 api_router = WagtailAPIRouter('wagtailapi')
