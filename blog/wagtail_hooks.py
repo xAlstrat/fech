@@ -2,7 +2,7 @@ from wagtail.admin.site_summary import SummaryItem
 from wagtail.admin.utils import get_site_for_user
 from wagtail.core import hooks
 
-from blog.models import Event, New, Benefit, CCEE, ONG, Transparency, Archive
+from blog.models import Event, New, Benefit, CCEE, ONG, Transparency, Archive, CEFECHContent
 
 
 @hooks.register('construct_main_menu')
@@ -57,13 +57,19 @@ class ArchiveSnippetSummaryItem(SnippetSummaryItem):
   model = Archive
   template = 'home/site_summary_archive.html'
 
+class CEFECHSnippetSummaryItem(SnippetSummaryItem):
+  model = CEFECHContent
+  template = 'home/site_summary_cefech.html'
+
 @hooks.register('construct_homepage_summary_items')
 def update_pages_summary(request, menu_items):
   menu_items[:] = [EventSnippetSummaryItem(request), NewSnippetSummaryItem(request), BenefitSnippetSummaryItem(request),
                    ONGSnippetSummaryItem(request),
                    TransparencySnippetSummaryItem(request),
                    ArchiveSnippetSummaryItem(request),
-                   CCEESnippetSummaryItem(request)]
+                   CCEESnippetSummaryItem(request),
+                   CEFECHSnippetSummaryItem(request)
+                   ]
 
 
 

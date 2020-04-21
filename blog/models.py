@@ -661,7 +661,7 @@ class FileContent(RawContent):
         related_name='+',
         verbose_name="Documento"
     )
-    published_at = models.DateTimeField('Fecha de publicación', default=now, help_text='Fecha de publicación del documento.')
+    publish_at = models.DateTimeField('Fecha de publicación', default=now, help_text='Fecha de publicación del documento.')
 
     search_fields = [
     ]
@@ -671,7 +671,7 @@ class FileContent(RawContent):
         FieldPanel('body', classname="full"),
         ImageChooserPanel('image', heading='heading'),
         DocumentChooserPanel('file', heading='heading'),
-        FieldPanel('published_at', classname="full"),
+        FieldPanel('publish_at', classname="full"),
         FieldPanel('published', classname="full"),
         FieldPanel('pinned', classname="full"),
     ]
@@ -708,7 +708,7 @@ class Archive(FileContent):
         FieldPanel('body', classname="full"),
         ImageChooserPanel('image', heading='heading'),
         DocumentChooserPanel('file', heading='heading'),
-        FieldPanel('published_at', classname="full"),
+        FieldPanel('publish_at', classname="full"),
         FieldPanel('address', classname="full"),
         FieldPanel('published', classname="full"),
         FieldPanel('pinned', classname="full"),
@@ -719,7 +719,7 @@ class Archive(FileContent):
         APIField('body', serializer=RichTextRendereableField()),
         APIField('image'),
         APIField('file'),
-        APIField('published_at'),
+        APIField('publish_at'),
         APIField('address'),
         APIField('published'),
         APIField('pinned'),
@@ -731,3 +731,30 @@ class Archive(FileContent):
 
 
 register_snippet(Archive)
+
+
+@register_snippet
+class CEFECHContent(Content):
+
+    class Meta:
+        verbose_name = "CEFECH"
+        verbose_name_plural = "CEFECH"
+        ordering = ('-publish_at',)
+
+    panels = Content.panels + Content.end_panels
+
+
+@register_snippet
+class CEFECHContentNotification(Notification, Orderable):
+    new = ParentalKey(to='blog.CEFECHContent', on_delete=models.CASCADE, related_name='notifications')
+
+    class Meta:
+        ordering = ['-created_at']
+
+
+@register_snippet
+class CEFECHContentSharing(Sharing, Orderable):
+    event = ParentalKey(to='blog.CEFECHContent', on_delete=models.CASCADE, related_name='sharings')
+
+    class Meta:
+        ordering = ['-created_at']

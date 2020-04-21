@@ -14,7 +14,7 @@ from wagtail.api.v2.utils import parse_boolean, BadRequestError
 from wagtail.images.api.v2.endpoints import ImagesAPIEndpoint
 from wagtail.documents.api.v2.endpoints import DocumentsAPIEndpoint
 
-from blog.models import Event, New, Benefit, Place, CCEE, ONG, Transparency, Archive
+from blog.models import Event, New, Benefit, Place, CCEE, ONG, Transparency, Archive, CEFECHContent
 
 
 class CustomFilterBackend(BaseFilterBackend):
@@ -24,12 +24,9 @@ class CustomFilterBackend(BaseFilterBackend):
         Eg: ?title=James Joyce
         """
         fields = set(view.get_available_fields(queryset.model, db_fields_only=True))
-        print('-----')
-        print(fields)
         query_parameters = view.request.GET.keys()
         query_parameters = set(filter(lambda param: re.sub(r'__.*$', '', param) in fields and param.find('__') != -1, query_parameters))
         fields = fields.union(query_parameters)
-        print(fields)
 
         for field_name, value in request.GET.items():
             if field_name in fields:
@@ -173,6 +170,13 @@ class ArchiveSnippetAPIEndpoint(SnippetApiEndpoint):
     def get_queryset(self):
         return self.model.objects.filter(published=True).all().order_by('-published_at')
 
+
+class CEFECHSnippetAPIEndpoint(SnippetApiEndpoint):
+    model = CEFECHContent
+
+    def get_queryset(self):
+        return self.model.objects.filter(published=True).all().order_by('-published_at')
+
 # Create the router. "wagtailapi" is the URL namespace
 api_router = WagtailAPIRouter('wagtailapi')
 
@@ -191,3 +195,4 @@ api_router.register_endpoint('ccees', CCEESnippetAPIEndpoint)
 api_router.register_endpoint('ongs', ONGSnippetAPIEndpoint)
 api_router.register_endpoint('transparency', TransparencySnippetAPIEndpoint)
 api_router.register_endpoint('archives', ArchiveSnippetAPIEndpoint)
+api_router.register_endpoint('cefech', CEFECHSnippetAPIEndpoint)
