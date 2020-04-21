@@ -14,7 +14,7 @@ from wagtail.api.v2.utils import parse_boolean, BadRequestError
 from wagtail.images.api.v2.endpoints import ImagesAPIEndpoint
 from wagtail.documents.api.v2.endpoints import DocumentsAPIEndpoint
 
-from blog.models import Event, New, Benefit, Place, CCEE
+from blog.models import Event, New, Benefit, Place, CCEE, ONG, Transparency, Archive
 
 
 class CustomFilterBackend(BaseFilterBackend):
@@ -152,6 +152,27 @@ class CCEESnippetAPIEndpoint(SnippetApiEndpoint):
     def get_queryset(self):
         return self.model.objects.filter(published=True).all().order_by('title')
 
+
+class ONGSnippetAPIEndpoint(SnippetApiEndpoint):
+    model = ONG
+
+    def get_queryset(self):
+        return self.model.objects.filter(published=True).all().order_by('title')
+
+
+class TransparencySnippetAPIEndpoint(SnippetApiEndpoint):
+    model = Transparency
+
+    def get_queryset(self):
+        return self.model.objects.filter(published=True).all().order_by('title')
+
+
+class ArchiveSnippetAPIEndpoint(SnippetApiEndpoint):
+    model = Archive
+
+    def get_queryset(self):
+        return self.model.objects.filter(published=True).all().order_by('-published_at')
+
 # Create the router. "wagtailapi" is the URL namespace
 api_router = WagtailAPIRouter('wagtailapi')
 
@@ -167,3 +188,6 @@ api_router.register_endpoint('benefits', BenefitSnippetAPIEndpoint)
 api_router.register_endpoint('news', NewSnippetAPIEndpoint)
 api_router.register_endpoint('places', PlaceSnippetAPIEndpoint)
 api_router.register_endpoint('ccees', CCEESnippetAPIEndpoint)
+api_router.register_endpoint('ongs', ONGSnippetAPIEndpoint)
+api_router.register_endpoint('transparency', TransparencySnippetAPIEndpoint)
+api_router.register_endpoint('archives', ArchiveSnippetAPIEndpoint)

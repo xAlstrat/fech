@@ -20,6 +20,7 @@ from wagtail.core.fields import RichTextField
 from wagtail.admin.edit_handlers import FieldPanel, InlinePanel, MultiFieldPanel, TabbedInterface, ObjectList, \
     FieldRowPanel, EditHandler
 from wagtail.core.rich_text import RichText
+from wagtail.documents.edit_handlers import DocumentChooserPanel
 from wagtail.images.edit_handlers import ImageChooserPanel
 from wagtail.search import index
 from wagtail.snippets.edit_handlers import SnippetChooserPanel
@@ -595,8 +596,8 @@ class RawContent(CreateMixin, ClusterableModel):
     title = models.CharField(max_length=250, verbose_name='Título')
     body = RichTextField(blank=True, verbose_name="Descripción")
     address = models.CharField(max_length=256, blank=True, verbose_name="Dirección")
-    published = models.BooleanField('Publicado', default=True)
-    pinned = models.BooleanField('Fijado', default=False)
+    published = models.BooleanField('Publicado', default=True, help_text='Marca la casilla para mostrar este contenido a los usuarios.')
+    pinned = models.BooleanField('Fijado', default=False, help_text='Marca la casilla para fijar este contenido como importante.')
 
     class Meta:
         abstract = True
@@ -636,6 +637,97 @@ class RawContent(CreateMixin, ClusterableModel):
 
 
 class CCEE(RawContent):
-    pass
+    class Meta:
+        verbose_name = 'CCEE'
+        verbose_name_plural = 'CCEEs'
+
 
 register_snippet(CCEE)
+
+
+class ONG(RawContent):
+    class Meta:
+        verbose_name = 'ONG'
+        verbose_name_plural = 'ONGs'
+
+
+register_snippet(ONG)
+
+
+class FileContent(RawContent):
+    file = models.ForeignKey(
+        'wagtaildocs.Document',
+        on_delete=models.DO_NOTHING,
+        related_name='+',
+        verbose_name="Documento"
+    )
+    published_at = models.DateTimeField('Fecha de publicación', default=now, help_text='Fecha de publicación del documento.')
+
+    search_fields = [
+    ]
+
+    panels = [
+        FieldPanel('title', classname='title'),
+        FieldPanel('body', classname="full"),
+        ImageChooserPanel('image', heading='heading'),
+        DocumentChooserPanel('file', heading='heading'),
+        FieldPanel('published_at', classname="full"),
+        FieldPanel('published', classname="full"),
+        FieldPanel('pinned', classname="full"),
+    ]
+
+    api_fields = [
+        APIField('title'),
+        APIField('body', serializer=RichTextRendereableField()),
+        APIField('image'),
+        APIField('file'),
+        APIField('published'),
+        APIField('pinned'),
+    ]
+
+    class Meta:
+        abstract = True
+
+
+class Transparency(FileContent):
+    pass
+
+    class Meta:
+        verbose_name = 'Transparencia'
+        verbose_name_plural = 'Transparencias'
+
+
+register_snippet(Transparency)
+
+
+class Archive(FileContent):
+    address = models.CharField(max_length=256, blank=True, verbose_name="Dirección")
+
+    panels = [
+        FieldPanel('title', classname='title'),
+        FieldPanel('body', classname="full"),
+        ImageChooserPanel('image', heading='heading'),
+        DocumentChooserPanel('file', heading='heading'),
+        FieldPanel('published_at', classname="full"),
+        FieldPanel('address', classname="full"),
+        FieldPanel('published', classname="full"),
+        FieldPanel('pinned', classname="full"),
+    ]
+
+    api_fields = [
+        APIField('title'),
+        APIField('body', serializer=RichTextRendereableField()),
+        APIField('image'),
+        APIField('file'),
+        APIField('published_at'),
+        APIField('address'),
+        APIField('published'),
+        APIField('pinned'),
+    ]
+
+    class Meta:
+        verbose_name = 'Archivo'
+        verbose_name_plural = 'Archivos'
+
+
+register_snippet(Archive)

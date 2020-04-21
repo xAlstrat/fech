@@ -2,7 +2,7 @@ from wagtail.admin.site_summary import SummaryItem
 from wagtail.admin.utils import get_site_for_user
 from wagtail.core import hooks
 
-from blog.models import Event, New, Benefit, CCEE
+from blog.models import Event, New, Benefit, CCEE, ONG, Transparency, Archive
 
 
 @hooks.register('construct_main_menu')
@@ -45,10 +45,24 @@ class CCEESnippetSummaryItem(SnippetSummaryItem):
   model = CCEE
   template = 'home/site_summary_ccees.html'
 
+class ONGSnippetSummaryItem(SnippetSummaryItem):
+  model = ONG
+  template = 'home/site_summary_ongs.html'
+
+class TransparencySnippetSummaryItem(SnippetSummaryItem):
+  model = Transparency
+  template = 'home/site_summary_transparency.html'
+
+class ArchiveSnippetSummaryItem(SnippetSummaryItem):
+  model = Archive
+  template = 'home/site_summary_archive.html'
 
 @hooks.register('construct_homepage_summary_items')
 def update_pages_summary(request, menu_items):
   menu_items[:] = [EventSnippetSummaryItem(request), NewSnippetSummaryItem(request), BenefitSnippetSummaryItem(request),
+                   ONGSnippetSummaryItem(request),
+                   TransparencySnippetSummaryItem(request),
+                   ArchiveSnippetSummaryItem(request),
                    CCEESnippetSummaryItem(request)]
 
 
