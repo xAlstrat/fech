@@ -5,6 +5,7 @@ from django.utils.timezone import now
 
 from django.core import mail
 from pyfcm import FCMNotification
+from sentry_sdk import capture_exception
 
 from fech.settings.base import FIREBASE_API_KEY
 from django.template import Template, Context
@@ -53,7 +54,11 @@ class BaseNotificationSender:
 
     def send_notifications(self, users):
         print('Sending %d notifications through %s' % (self.notifications.count(), self.channel))
-        sent = self.send(self.notifications, users)
+        try:
+            sent = self.send(self.notifications, users)
+        except Exception as e:
+            print(e)
+            capture_exception(e)
         if sent:
             self.after_send()
 

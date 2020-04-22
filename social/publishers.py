@@ -4,6 +4,7 @@ from django.template.loader import get_template
 from django.utils.timezone import now
 
 from django.core import mail
+from sentry_sdk import capture_exception
 
 from social.publish import publish_img_to_twitter, publish_img_to_instagram
 
@@ -57,7 +58,12 @@ class BasePublisher:
 
     def post_publications(self):
         for publication in self.notifications:
-            posted = self.post(publication)
+            posted = False
+            try:
+                posted = self.post(publication)
+            except Exception as e:
+                print(e)
+                capture_exception(e)
             if posted:
                 setattr(publication, self.provider.notified_field, True)
                 publication.save()
