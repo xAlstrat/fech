@@ -106,31 +106,20 @@ class EventSnippetAPIEndpoint(SnippetApiEndpoint):
     model = Event
 
     def get_queryset(self):
-        return self.model.objects.exclude(unpublish_at__isnull=False, unpublish_at__lte=now()).all().order_by('id')
+        return self.model.objects.filter(publish_at__lte=now()).exclude(unpublish_at__isnull=False, unpublish_at__lte=now()).all().order_by('id')
 
 
 class NewSnippetAPIEndpoint(SnippetApiEndpoint):
     model = New
 
     def get_queryset(self):
-        return self.model.objects.exclude(unpublish_at__isnull=False, unpublish_at__lte=now()).all().order_by('id')
+        return self.model.objects.filter(publish_at__lte=now()).exclude(unpublish_at__isnull=False, unpublish_at__lte=now()).all().order_by('id')
 
 class BenefitSnippetAPIEndpoint(SnippetApiEndpoint):
     model = Benefit
-    # body_fields = BaseAPIEndpoint.body_fields + [
-    #     'field_1',
-    #     'field_2',
-    #     'field_3',
-    # ]
-#
-    # listing_default_fields = BaseAPIEndpoint.listing_default_fields = [
-    #     'field_1',
-    #     'field_2',
-    #     'field_3',
-    # ]
 
     def get_queryset(self):
-        return self.model.objects.exclude(unpublish_at__isnull=False, unpublish_at__lte=now()).all().order_by('id')
+        return self.model.objects.filter(publish_at__lte=now()).exclude(unpublish_at__isnull=False, unpublish_at__lte=now()).all().order_by('id')
 
 
 class PlaceSnippetAPIEndpoint(SnippetApiEndpoint):
@@ -175,7 +164,7 @@ class CEFECHSnippetAPIEndpoint(SnippetApiEndpoint):
     model = CEFECHContent
 
     def get_queryset(self):
-        return self.model.objects.filter(published=True).all().order_by('-publish_at')
+        return self.model.objects.filter(publish_at__lte=now()).exclude(unpublish_at__isnull=False, unpublish_at__lte=now()).all().order_by('-publish_at')
 
 # Create the router. "wagtailapi" is the URL namespace
 api_router = WagtailAPIRouter('wagtailapi')
